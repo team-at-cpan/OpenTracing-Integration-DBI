@@ -4,7 +4,7 @@ package OpenTracing::Integration::DBI;
 use strict;
 use warnings;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 # AUTHORITY
 
 no indirect;
@@ -175,7 +175,7 @@ __END__
 
 =head1 AUTHOR
 
-Tom Molesworth C<< TEAM@cpan.org >>
+Original implementation by Tom Molesworth C<< TEAM@cpan.org >> with contributions from C<VTI>.
 
 =head1 LICENSE
 
