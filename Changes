@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.002     2021-11-21 22:48:33+08:00 Asia/Kuala_Lumpur
     [New features]
 
     - wrap some extra methods, github #3 (thanks VTI)
