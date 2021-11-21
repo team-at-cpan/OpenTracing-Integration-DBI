@@ -12,6 +12,8 @@ use Log::Any::Adapter qw(TAP);
 use OpenTracing::Any qw($tracer);
 use OpenTracing::Integration qw(DBI);
 
+$tracer->enable;
+
 my $dbh = DBI->connect('dbi:SQLite:dbname=:memory:', 'example_user');
 $dbh->do(q{create temporary table example (id integer primary key autoincrement, data text)});
 $dbh->do(q{insert into example (data) values ('example data here')});
