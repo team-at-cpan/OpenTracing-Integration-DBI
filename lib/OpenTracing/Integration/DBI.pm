@@ -50,6 +50,53 @@ sub load {
 
     unless($loaded++) {
         require DBI;
+        install_modifier q{DBI}, around => connect => sub {
+            my ($code, $dbh, $dsn, $username, @rest) = @_;
+
+            my $instance = (DBI->parse_dsn($dsn))[-1];
+
+            return trace {
+                my ($span) = @_;
+                try {
+                    $span->tag(
+                        'component'    => 'DBI',
+                        'span.kind'    => 'client',
+                        'db.operation' => 'connect',
+                        'db.instance'  => $instance,
+                        'db.username'  => $username,
+                    );
+                    return $dbh->$code($dsn, $username, @rest);
+                } catch {
+                    my $err = $@;
+                    $span->tag(
+                        error => 1,
+                    );
+                    die $@;
+                }
+            } operation_name => 'connect';
+        };
+        install_modifier q{DBI::db}, around => disconnect => sub {
+            my ($code, $dbh, @rest) = @_;
+            return trace {
+                my ($span) = @_;
+                try {
+                    $span->tag(
+                        'component'       => 'DBI',
+                        'span.kind'       => 'client',
+                        'db.operation'    => 'disconnect',
+                        (defined $dbh->{Name} ? ('db.instance' => $dbh->{Name}) : ()),
+                        (defined $dbh->{Username} ? ('db.user' => $dbh->{Username}) : ()),
+                    );
+                    return $dbh->$code(@rest);
+                } catch {
+                    my $err = $@;
+                    $span->tag(
+                        error => 1,
+                    );
+                    die $@;
+                }
+            } operation_name => 'disconnect';
+        };
         install_modifier q{DBI::db}, around => prepare => sub {
             my ($code, $dbh, $sql, @rest) = @_;
             my $type = $class->type_from_sql($sql);
