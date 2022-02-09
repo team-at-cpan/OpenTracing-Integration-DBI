@@ -20,9 +20,18 @@ $dbh->do(q{insert into example (data) values ('example data here')});
 $dbh->selectall_arrayref(q{select * from example});
 $dbh->selectrow_arrayref(q{select * from example});
 $dbh->selectcol_arrayref(q{select * from example});
+$dbh->disconnect;
 
 my @spans = $tracer->span_list;
-is(@spans, 9, 'have expected span count');
+is(@spans, 11, 'have expected span count');
+{
+    my $span = shift @spans;
+    is($span->operation_name, 'connect', 'have correct operation');
+}
+{
+    my $span = $spans[-1];
+    is($span->operation_name, 'disconnect', 'have correct operation');
+}
 {
     my $span = shift @spans;
     is($span->operation_name, 'sql do: create temporary', 'have correct operation');
